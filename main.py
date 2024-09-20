@@ -61,18 +61,15 @@ async def websocket_endpoint(websocket: WebSocket, player_name: str):
             data = await websocket.receive_text()
             move = json.loads(data)
 
-            if move["direction"] == "left":
+            if move["direction"] == "left" and players[player_id]["x"] > 0:
                 players[player_id]["x"] -= 5
-            elif move["direction"] == "right":
+            elif move["direction"] == "right" and players[player_id]["x"] < 780:
                 players[player_id]["x"] += 5
-            elif move["direction"] == "up":
+            elif move["direction"] == "up" and players[player_id]["y"] > 0:
                 players[player_id]["y"] -= 5
-            elif move["direction"] == "down":
+            elif move["direction"] == "down" and players[player_id]["y"] < 580:
                 players[player_id]["y"] += 5
                 
-            players[player_id]["x"] = max(0, min(780, players[player_id]["x"]))  # 800 - player width (20)
-            players[player_id]["y"] = max(0, min(580, players[player_id]["y"]))  # 600 - player height (20)
-
 
             # Check for collisions with enemy balls
             if check_collision(players[player_id]):

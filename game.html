@@ -5,22 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PongAttack</title>
     <style>
-        canvas {
-            border: 1px solid black;
-            background-color: #fafafa;
-        }
         body {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;  /* Arrange canvas and leaderboard side by side */
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
         }
+        canvas {
+            border: 1px solid black;
+            background-color: #fafafa;
+        }
+        #leaderboard {
+            margin-left: 20px;  /* Space between canvas and leaderboard */
+            border: 1px solid black;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        th, td {
+            padding: 5px 10px;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="leaderboard">
+        <h3>Leaderboard</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboard-body">
+                <!-- Leaderboard entries will be populated here -->
+            </tbody>
+        </table>
+    </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -44,6 +69,7 @@
             } else {
                 players = data.players;
                 enemies = data.enemies;  // Update the enemies' positions
+                updateLeaderboard();  // Update the leaderboard
             }
         };
 
@@ -84,7 +110,7 @@
                 player.x += direction.x;
                 player.y += direction.y;
 
-                // Boundary checking (optional)
+                // Boundary checking
                 player.x = Math.max(0, Math.min(canvas.width - 20, player.x));
                 player.y = Math.max(0, Math.min(canvas.height - 20, player.y));
 
@@ -105,9 +131,24 @@
             return null;  // No movement
         }
 
+        // Update the leaderboard based on players' scores
+        function updateLeaderboard() {
+            const leaderboardBody = document.getElementById('leaderboard-body');
+            leaderboardBody.innerHTML = '';  // Clear existing entries
+
+            // Sort players by score in descending order
+            const sortedPlayers = Object.values(players).sort((a, b) => b.score - a.score);
+
+            // Populate the leaderboard
+            sortedPlayers.forEach(player => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${player.name}</td><td>${player.score}</td>`;
+                leaderboardBody.appendChild(row);
+            });
+        }
+
         // Start the update loop
         update();
     </script>
 </body>
 </html>
-
