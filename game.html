@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PongAttack</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+            background-color: #fafafa;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let players = [];
+        let enemies = [];
+        const urlParams = new URLSearchParams(window.location.search);
+        const playerName = urlParams.get('name');  // Get the player's name from the URL
+
+        let socket = new WebSocket(`ws://localhost:8000/ws/${encodeURIComponent(playerName)}`);
+
+        // When data is received from the server
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            if (data.action === "redirect") {
+                window.location.href = data.url;  // Redirect to the index.html page
+            } else {
+                players = data.players;
+                enemies = data.enemies;  // Update the enemies' positions
+                renderGame();
+            }
+        };
+
+        function renderGame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    players.forEach(player => {
+        ctx.fillStyle = player.color;
+        ctx.fillRect(player.x, player.y, 20, 20);  // Draw player as a square
+        
+        // Render player's name above their square
+        ctx.fillStyle = "black";
+        ctx.font = "14px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(player.name, player.x + 10, player.y - 5);  // Center name above the square
+    });
+
+    enemies.forEach(enemy => {
+        ctx.beginPath();
+        ctx.arc(enemy.x, enemy.y, 10, 0, Math.PI * 2);  // Draw enemy as a circle
+        ctx.fillStyle = "red";
+        ctx.fill();
+        ctx.closePath();
+    });
+}
+
+
+        // Send direction to the server when arrow keys are pressed
+        document.addEventListener('keydown', function(e) {
+            let direction = null;
+            if (e.key === 'ArrowLeft') direction = 'left';
+            if (e.key === 'ArrowRight') direction = 'right';
+            if (e.key === 'ArrowUp') direction = 'up';
+            if (e.key === 'ArrowDown') direction = 'down';
+
+            if (direction) {
+                socket.send(JSON.stringify({direction}));
+            }
+        });
+    </script>
+</body>
+</html>
+
