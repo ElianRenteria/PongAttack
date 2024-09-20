@@ -69,10 +69,14 @@ async def websocket_endpoint(websocket: WebSocket, player_name: str):
                 players[player_id]["y"] -= 5
             elif move["direction"] == "down":
                 players[player_id]["y"] += 5
+                
+            players[player_id]["x"] = max(0, min(780, players[player_id]["x"]))  # 800 - player width (20)
+            players[player_id]["y"] = max(0, min(580, players[player_id]["y"]))  # 600 - player height (20)
+
 
             # Check for collisions with enemy balls
             if check_collision(players[player_id]):
-                print(f"Collision detected for player: {player_name}")
+                # print(f"Collision detected for player: {player_name}")
                 
                 # Remove player from players dictionary
                 if player_id in players:
@@ -122,9 +126,11 @@ async def broadcast_positions():
             print(f"Error sending data to player: {e}")
 
 def check_collision(player):
+    player_radius = 10  # Assuming the player is represented as a square of size 20x20
     for enemy in enemies:
-        # Check if the player collides with the enemy (basic AABB collision)
-        if abs(player["x"] - enemy["x"]) < 30 and abs(player["y"] - enemy["y"]) < 30:
+        enemy_radius = 10  # Assuming the enemy is represented as a circle with radius 10
+        if (abs((player["x"] + player_radius) - (enemy["x"])) <= (player_radius + enemy_radius) and
+            abs((player["y"] + player_radius) - (enemy["y"])) <= (player_radius + enemy_radius)):
             return True
     return False
 
